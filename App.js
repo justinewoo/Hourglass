@@ -95,7 +95,7 @@ import SignUpScreen from "./app/Screens/SignUpScreen"
 import SignInScreen from "./app/Screens/SignInScreen"
 import ChatbookScreen from "./app/Screens/ChatbookScreen"
 import axios from "axios"
-//import ChatroomScreen from "./app/Screens/ChatroomScreen"
+import ChatroomScreen from "./app/Screens/ChatroomScreen"
 
 const LoginStack = createStackNavigator(
   {
@@ -117,9 +117,9 @@ const UserStack = createStackNavigator(
     ChatbookScreen: {
       screen: ChatbookScreen
     },
-    // ChatroomScreen: {
-    //   screen: ChatroomScreen
-    // }
+    ChatroomScreen: {
+      screen: ChatroomScreen
+    }
   }
 )
 const AuthStack = createStackNavigator(
@@ -145,8 +145,6 @@ const AppStack = createBottomTabNavigator(
           const querystring = require('querystring');
           axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(getUsersData))
               .then(function(allUsersValues) {
-                // navigation.setParams ({allUsers: allUsersValues['data']});
-                // navigation.navigate ("ChatbookScreen");
                 navigation.navigate("ChatbookScreen", {allUsers: allUsersValues['data']})
 
               })

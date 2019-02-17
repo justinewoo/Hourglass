@@ -30,7 +30,6 @@ class SignInScreen extends Component {
           .then(function(response) {
               passwordValue = response['data']['password']
               usernameValue = response['data']['username']
-              console.log(usernameValue)
               if (passwordValue == self.state.password) {
                   axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(getUsersData))
                       .then(function(allUsersValues) {
@@ -41,6 +40,11 @@ class SignInScreen extends Component {
                   alert('This username and password are incorrect')
               }
           })
+  }
+
+  _goBackToCreate = () => {
+    var self = this
+    self.props.navigation.navigate("SignUpScreen")
   }
   render(){
     let pic = {
@@ -77,7 +81,7 @@ class SignInScreen extends Component {
 
         <Button
           onPress={() => {
-          Alert.alert('Redirecting to Account Creation Screen');
+              this._goBackToCreate()
           }}
           title="Create an Account"
         />
