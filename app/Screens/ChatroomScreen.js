@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Alert, AppRegistry, Button, StyleSheet, View, Text, TextInput, Image, Font, ScrollView } from 'react-native';
-
+import { Alert, AppRegistry, Button, StyleSheet, View, Text, TextInput, Image, Font, ScrollView, AsyncStorage } from 'react-native';
+import axios from "axios"
 
 class ChatroomScreen extends Component {
   constructor(props) {
@@ -9,11 +9,34 @@ class ChatroomScreen extends Component {
       message: '',
       fname: '',
       lname: '',
-      historyMessages: []
+      historyMessages: [],
+      attributeArray: [],
+      sender: '',
+      receiver: ''
     };
 
   }
-
+  _postMessage = () => {
+    var self = this
+    var today = new Date();
+    var dd = today.getDate();
+    var mm = today.getMonth()+1;
+    var yyyy = today.getFullYear();
+    var t = today.getTime();
+    const postMessageData = {
+      type: 'user',
+      todo: 'postMessage',
+      sender: self.state.sender,
+      receiver: self.state.receiver,
+      message: self.state.message,
+      year: yyyy,
+      month: mm,
+      day: dd,
+      time: t
+    }
+    const querystring = require('querystring')
+    axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(postMessageData))
+  }
   render(){
     const shadowStyle = { shadowOpacity: 0.5, shadowColor: 'gray', shadowRadius: 50,}
     const {navigation} = this.props;
@@ -21,8 +44,27 @@ class ChatroomScreen extends Component {
     const currentSenderValues = navigation.getParam("currentSenderMessages", "Get some friends")
     const firstName = navigation.getParam("fname")
     const lastName = navigation.getParam("lname")
+    const currentUser = navigation.getParam("unameValue")
+    const receiver = navigation.getParam("receiver")
+    console.log(currentUser)
     currentHistory = currentReceiverValues.concat(currentSenderValues)
-
+    const receiverAttribute =  {
+      	position: 'relative',
+        right: -35,
+      	width: 100,
+      	height: 80,
+      	backgroundColor: '#e8ffdb',
+      	borderRadius: 10,
+    }
+    const senderAttribute = {
+      	position: 'relative',
+      	right: -235,
+      	width: 100,
+      	height: 80,
+      	borderRadius: 10,
+      	backgroundColor: 'skyblue'
+    }
+    const currentAttributes = []
     currentHistory.sort(function(d1,d2){
       if (Number(d1['year']) < Number(d2['year'])){
         return -1
@@ -49,9 +91,22 @@ class ChatroomScreen extends Component {
         }
       }
     })
+    for (var i = 0; i < currentHistory.length; i++) {
+      console.log(currentHistory[i]['sender'])
+      console.log(currentUser)
+      if (currentHistory[i]['sender'] == currentUser) {
+        currentAttributes.push(senderAttribute)
+      } else {
+        currentAttributes.push(receiverAttribute)
+      }
+    }
+    //console.log(currentAttributes)
     this.state.historyMessages = currentHistory
     this.state.fname = firstName
     this.state.lname = lastName
+    this.state.attributeArray = currentAttributes
+    this.state.sender = currentUser
+    this.state.receiver = receiver
     return(
         <View style = {styles.con}>
 
@@ -61,33 +116,28 @@ class ChatroomScreen extends Component {
             	{this.state.fname} {this.state.lname}
             </Text>
             	<View style = {styles.MessagePage}>
-            	<ScrollView>
-
-            		<View style = {styles.Sender}>
-
-            			<Text style = {styles.MessageStyle}> hello </Text>
-
-            	    </View>
-            		<View style = {styles.Reciever}>
-            			<Text style = {styles.MessageStyle}> hello </Text>
-            		</View>
-            	</ScrollView>
-
+              	<ScrollView>
+                  {this.state.historyMessages.map ((value, index) => (
+                		  <View style = {this.state.attributeArray[{index}["index"]]} key = {index}>
+                			   <Text style = {styles.MessageStyle}> {value["message"]} </Text>
+                	    </View>
+                  ))}
+              	</ScrollView>
             	</View>
-          </View>
+            </View>
           <View style = {styles.tainer}>
 
             <TextInput
     		style = {{fontSize: 15, height: 20, marginTop: 10, marginLeft: 5}}
             placeholder="Message"
-            onChangeText = {(message) => this.setState({message})}
+            onChangeText={(message) => this.setState({message})} value = {this.state.message}
             />
 
 
             <View style = {styles.buttonLayout}>
               <Button
       	        onPress={() => {
-      	        Alert.alert('Message Sent');
+      	        this._postMessage()
       	        }}
                 title="Send"
               />
@@ -114,7 +164,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     flex: 0,
     height: 2,
-    marginTop: 610,
+    marginTop: 490,
     backgroundColor: 'skyblue',
         },
   buttonLayout: {
@@ -127,15 +177,15 @@ const styles = StyleSheet.create({
     },
   MessagePage: {
   	padding: 10,
-  	height: 550,
+  	height: 450,
   },
   viewStyle: {
-  	height: 100,
+  	height: 50,
   	backgroundColor: '#f7f7f7',
-  	paddingTop: 50,
+  	paddingTop: 25,
   	paddingLeft: 20,
   	fontSize: 20,
-  	fontFamily: 'PingFangHK-Light',
+  	fontFamily: 'Helvetica',
   },
   Sender: {
   	position: 'relative',

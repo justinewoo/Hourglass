@@ -60,7 +60,7 @@ class ChatbookScreen extends Component {
               //     }
               //   }
               // })
-              self.props.navigation.navigate("ChatroomScreen", {receiver: userValue['value']['username'], fname: userValue['value']['firstName'], lname: userValue['value']['lastName'], currentReceiverMessages: receiverRep['data'], currentSenderMessages: senderRep['data']})
+              self.props.navigation.navigate("ChatroomScreen", {receiver: userValue['value']['username'], fname: userValue['value']['firstName'], lname: userValue['value']['lastName'], unameValue: uname, currentReceiverMessages: receiverRep['data'], currentSenderMessages: senderRep['data']})
             })
         })
   }
