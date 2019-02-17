@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
-import { Alert, AppRegistry, Button, StyleSheet, View, Text, TextInput, Image, Font, ScrollView, AsyncStorage } from 'react-native';
+import { Alert, AppRegistry, Button, StyleSheet, View, Text, TextInput, Image, Font, ScrollView, AsyncStorage, KeyboardAvoidingView } from 'react-native';
 import axios from "axios"
-
 
 class ChatroomScreen extends Component {
   constructor(props) {
@@ -16,16 +15,18 @@ class ChatroomScreen extends Component {
       receiver: '',
       senderValues: [],
       receiverValues: [],
-      count: 0
+      count: 0,
+      dynamicAttributesArray: []
     };
 
 
   }
-  componentDidUpdate() {
-    if (this.state.count != 0) {
-      console.log('sup')
-      setInterval(() => this.loadData(), 1000);
-    }
+  componentDidMount() {
+    // if (this.state.count != 0) {
+    //   console.log('sup')
+    //   setInterval(() => this.loadData(), 1000);
+    // }
+    this.loadData()
   }
   async loadData() {
     var self = this
@@ -45,12 +46,12 @@ class ChatroomScreen extends Component {
     }
     const querystring = require('querystring');
     axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(getSenderToReceiver))
-        .then(function(receiverRep){
+        .then(rep => {
           axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(getReceiverToSender))
-            .then(function(senderRep){
-              self.setState( { senderValues: senderRep })
-              self.setState({receiverValues: receiverRep})
-
+            .then(res => {
+              const sender = rep.data
+              const receiver = res.data
+              this.setState({ sender, receiver })
             })
         })
   }
@@ -88,25 +89,47 @@ class ChatroomScreen extends Component {
     const receiver = navigation.getParam("receiver")
     this.state.senderValues = currentReceiverValues
     this.state.receiverValues = currentSenderValues
-    console.log(currentUser)
     currentHistory = this.state.receiverValues.concat(this.state.senderValues)
     const receiverAttribute =  {
+    	marginTop: 3,
       	position: 'relative',
-        right: -35,
-      	width: 100,
-      	height: 80,
-      	backgroundColor: '#e8ffdb',
+        paddingRight: 5,
+      	width: 200,
+      	top: 0,
       	borderRadius: 10,
+      	alignItems: 'flex-start',
+    	justifyContent: 'flex-start',
     }
     const senderAttribute = {
+    	marginTop: 3,
       	position: 'relative',
-      	right: -235,
-      	width: 100,
-      	height: 80,
+      	top: 0,
+      	right: -150,
+      	width: 200,
       	borderRadius: 10,
-      	backgroundColor: 'skyblue'
+      	alignItems: 'flex-end',
+    	justifyContent: 'flex-start',
     }
+    const senderDynamicAttribute = {flex: -1,
+                        	marginLeft: 0,
+                        	paddingRight: 5,
+                        	backgroundColor: 'skyblue',
+                  			marginRight: 5,
+                  			borderRadius: 10,
+                  			paddingBottom: 5,
+                  			paddingTop: 2,
+                  			marginRight: 3}
+    const receiverDynamicAttribute = {flex: -1,
+                        marginLeft: 2,
+                        paddingBottom: 5,
+                        paddingTop: 2,
+                        paddingRight: 10,
+                        backgroundColor: '#e8ffdb',
+                  		marginRight: 5,
+                  		borderRadius: 10,
+                  		padding: 5,}
     const currentAttributes = []
+    const currentDynamicAttributes = []
     currentHistory.sort(function(d1,d2){
       if (Number(d1['year']) < Number(d2['year'])){
         return -1
@@ -134,12 +157,12 @@ class ChatroomScreen extends Component {
       }
     })
     for (var i = 0; i < currentHistory.length; i++) {
-      console.log(currentHistory[i]['sender'])
-      console.log(currentUser)
       if (currentHistory[i]['sender'] == currentUser) {
         currentAttributes.push(senderAttribute)
+        currentDynamicAttributes.push(senderDynamicAttribute)
       } else {
         currentAttributes.push(receiverAttribute)
+        currentDynamicAttributes.push(receiverDynamicAttribute)
       }
     }
     //console.log(currentAttributes)
@@ -150,20 +173,29 @@ class ChatroomScreen extends Component {
     this.state.sender = currentUser
     this.state.receiver = receiver
     this.state.count = 1
+    this.state.dynamicAttributesArray = currentDynamicAttributes
     return(
-        <View style = {styles.con}>
+    <KeyboardAvoidingView style={styles.container} behavior="padding" enabled>
+        <View style = {styles.cotainer}>
 
-          <View style={styles.container}>
+          <View style={{flex: 1}}>
 
             <Text style = {[styles.viewStyle, shadowStyle]}>
             	{this.state.fname} {this.state.lname}
             </Text>
             	<View style = {styles.MessagePage}>
-              	<ScrollView>
+              	<ScrollView
+    				ref={ref => this.scrollView = ref}
+    				onContentSizeChange={(contentWidth, contentHeight)=>{
+        			this.scrollView.scrollToEnd({animated: false});
+    				}}>
                   {this.state.historyMessages.map ((value, index) => (
                 		  <View style = {this.state.attributeArray[{index}["index"]]} key = {index}>
-                			   <Text style = {styles.MessageStyle}> {value["message"]} </Text>
-                	    </View>
+                			   	<View style = {this.state.dynamicAttributesArray[{index}["index"]]}>
+                			   		<Text style = {styles.MessageStyle}> {value["message"]} </Text>
+                	    		</View>
+                	    	</View>
+
                   ))}
               	</ScrollView>
             	</View>
@@ -171,7 +203,7 @@ class ChatroomScreen extends Component {
           <View style = {styles.tainer}>
 
             <TextInput
-    		style = {{fontSize: 15, height: 20, marginTop: 10, marginLeft: 5}}
+			style = {{fontSize: 15, height: 20, marginTop: 10, marginLeft: 5, width: 300}}
             placeholder="Message"
             onChangeText={(message) => this.setState({message})} value = {this.state.message}
             />
@@ -187,6 +219,7 @@ class ChatroomScreen extends Component {
             </View>
         </View>
         </View>
+            </KeyboardAvoidingView>
 
             );
             }
@@ -197,7 +230,7 @@ export default ChatroomScreen
 
 const styles = StyleSheet.create({
   container: {
-  	flex: 1,
+  	flexGrow: 1,
   },
   tainer: {
     padding: 10,
@@ -231,21 +264,22 @@ const styles = StyleSheet.create({
   	fontFamily: 'Helvetica',
   },
   Sender: {
+  	marginTop: 5,
   	position: 'relative',
-    right: -35,
-  	width: 100,
-  	height: 80,
-  	backgroundColor: '#e8ffdb',
-  	borderRadius: 10,
-  },
-  Reciever: {
+  	top: 0,
+    width: 200,
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    },
+  Receiver: {
+  	marginTop: 5,
   	position: 'relative',
-  	right: -235,
-  	width: 100,
-  	height: 80,
-  	borderRadius: 10,
-  	backgroundColor: 'skyblue'
-  },
+  	top: 0,
+  	right: -150,
+    width: 200,
+    alignItems: 'flex-end',
+    justifyContent: 'flex-start',
+    },
   MessageStyle: {
   	paddingTop: 10,
   	paddingLeft: 10,

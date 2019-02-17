@@ -11,12 +11,14 @@
     "axios": "^0.16.2",
     "expo": "^32.0.0",
     "ionicons": "^4.5.5",
+    "native-base": "^2.8.2",
     "query-string": "^6.2.0",
     "querystring": "^0.2.0",
     "react": "16.5.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-32.0.0.tar.gz",
     "react-native-vector-icons": "^6.3.0",
-    "react-navigation": "^3.2.3"
+    "react-navigation": "^3.2.3",
+    "react-timer-mixin": "^0.13.4"
   },
   "devDependencies": {
     "babel-preset-expo": "^5.0.0"

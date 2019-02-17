@@ -1,16 +1,15 @@
 import React, { Component }from 'react';
-import { StyleSheet, ScrollView, Text, View, Button, AppRegistry, TouchableHighlight, AsyncStorage } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Modal, DatePickerIOS, TextInput, Alert, ScrollView, AsyncStorage} from 'react-native';
+import { Card, CardItem, Container, Content, Item, Header, List, ListItem, Left, Right, Body, Input, Button, Text} from 'native-base';
 import axios from "axios"
 
 class ChatbookScreen extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      allUsers: '',
-      allMessages: []
-    }
-  }
+	constructor(props) {
+		super(props)
+		this.state = {chosenDate: new Date(), text: '', message: '',allUsers: '', allMessages: []};
+		this.setDate = this.setDate.bind(this);
 
+	}
   _goToChatroom = async (userValue) => {
     var self = this
     const uname = await AsyncStorage.getItem("Username")
@@ -32,74 +31,115 @@ class ChatbookScreen extends Component {
         .then(function(receiverRep){
           axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(getReceiverToSender))
             .then(function(senderRep){
-              //console.log(JSON.parse(JSON.stringify(senderRep['data'])))
-              //currentHistory = JSON.parse(JSON.stringify(senderRep['data'])).concat(JSON.parse(JSON.stringify(receiverRep['data'])))
-              // currentHistory.sort(function(d1,d2){
-              //   if (d1['year'] < d2['year']){
-              //     return 1
-              //   }
-              //   else if (d1['year'] > d2['year']){
-              //     return -1
-              //   }else{
-              //     if(d1['month']<d2['month']){
-              //       return 1
-              //     }else if (d1['month']>d2['month']) {
-              //       return -1
-              //     }else{
-              //       if(d1['day'] < d2['day']){
-              //         return 1
-              //       }else if (d1['day'] > d2['day']) {
-              //         return -1
-              //       }else{
-              //         if (d1['time'] < d2['time']){
-              //           return 1
-              //         }else if (d1['time'] > d2['time']) {
-              //           return -1
-              //         }
-              //       }
-              //     }
-              //   }
-              // })
               AsyncStorage.setItem("Receiver", userValue['value']['username'])
               self.props.navigation.navigate("ChatroomScreen", {receiver: userValue['value']['username'], fname: userValue['value']['firstName'], lname: userValue['value']['lastName'], unameValue: uname, currentReceiverMessages: receiverRep['data'], currentSenderMessages: senderRep['data']})
             })
         })
   }
 
- render() {
+	setDate(newDate) {
+		this.setState({chosenDate: newDate});
+	}
+
+	state = {
+		modalVisible: false,
+	};
+
+	openModal() {
+		this.setState({modalVisible:true});
+	}
+
+	closeModal() {
+		this.setState({modalVisible:false});
+	}
+
+	render() {
     const {navigation} = this.props;
     const currentUserValues = navigation.getParam("allUsers", "Get some friends")
     this.state.allUsers = currentUserValues
     return (
-
-      <ScrollView>
-      	<View style={styles.container}>
+      <Container>
+      	<Header>
+      		<Text> Contacts </Text>
+      	</Header>
+        <ScrollView>
           {this.state.allUsers.map ((value, index) => (
-              <TouchableHighlight
-               style={styles.button}
-               onPress={() => {
-                   this._goToChatroom({value})
-               }}
-              underlayColor="#eaf5f9"
-              key={index}
-              >
-               <Text style = {{fontSize: 20}}> {value['firstName']} {value['lastName']} </Text>
-              </TouchableHighlight>
-          ))}
-      	</View>
-      </ScrollView>
-    )
+              <View key = {index}>
+          		<Modal
+          			visible = {this.state.modalVisible}
+          			animationType = {'slide'}
+          			onRequestClose={() => this.closeModal()}
+          			backdropOpacity ={0.1}
+          		>
+          			<View
+          				style = {{paddingTop: 30, paddingLeft: 10, paddingBottom: 40}}
+          			>
+          				<Button small border
+          					onPress = {() => this.closeModal()}
+          				>
+          					<Text>Exit</Text>
+          				</Button>
+          			</View>
+          			<View style = {{justifyContent: 'center', flexDirection: 'row', height: 50}}>
+          				<Text style = {{fontSize: 30, fontFamily: 'Helvetica-Light'}}> Schedule Message </Text>
+          			</View>
+          			<View style = {{paddingLeft: 10, paddingRight: 10, paddingBottom: 20}}>
+          				<View style = {{paddingBottom: 20}}>
+          					<Item rounded>
+          						<Input
+          							placeholder = 'Message'
+          							onChangeText = {(message) => this.setState({message})}
+          						/>
+          					</Item>
+          				</View>
+          			</View>
+          			<View>
+          				<View style = {{justifyContent: 'center', flexDirection: 'row'}}>
+          					<Text style = {{fontFamily: 'Helvetica-Light'}}>
+          						Date to send: {this.state.chosenDate.toString().substr(4,12)}
+          					</Text>
+          				</View>
+          				<View style = {{paddingBottom: 100}}>
+          					<DatePickerIOS
+          						date = {this.state.chosenDate}
+          						onDateChange = {this.setDate}
+          					/>
+          				</View>
+          				<View style = {{paddingLeft: 10, paddingRight: 10}}>
+          					<Button block info
+          					style = {{padding: 20}}
+          					onPress={() => {Alert.alert('Message Sent');}}
+          					>
+          						<Text> Send </Text>
+          					</Button>
+          				</View>
+          			</View>
+          		</Modal>
+          		<List>
+            			<ListItem Avatar>
+
+            				<View style = {{flex: 1, flexDirection: 'row', justifyContent: 'space-between'}}>
+                    <TouchableOpacity onPress={() => this._goToChatroom({value})}>
+
+                        <Text> {value['firstName']} {value['lastName']}</Text>
+                        </TouchableOpacity>
+
+                					<Button full rounded info
+                						onPress = {() => this.openModal()}
+                					>
+                						<Text> Schedule </Text>
+                					</Button>
+
+            				</View>
+
+            			</ListItem>
+          		</List>
+            </View>
+
+        ))}
+        	</ScrollView>
+      </Container>
+    );
   }
 }
-export default ChatbookScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 50,
-  },
-  button: {
-    backgroundColor: '#f7f7f7',
-    padding: 50,
-  },
-})
+export default ChatbookScreen

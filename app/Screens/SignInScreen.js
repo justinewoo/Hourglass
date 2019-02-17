@@ -30,10 +30,14 @@ class SignInScreen extends Component {
           .then(function(response) {
               passwordValue = response['data']['password']
               usernameValue = response['data']['username']
+              firstNameValue = response['data']['firstName']
+              lastNameValue = response['data']['lastName']
               if (passwordValue == self.state.password) {
                   axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(getUsersData))
                       .then(function(allUsersValues) {
                           AsyncStorage.setItem("Username", usernameValue)
+                          AsyncStorage.setItem("FirstName", firstNameValue)
+                          AsyncStorage.setItem("LastName", lastNameValue)
                           self.props.navigation.navigate("ChatbookScreen", {allUsers: allUsersValues['data']})
                       })
               } else if (usernameValue == undefined) {

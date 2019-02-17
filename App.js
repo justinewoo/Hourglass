@@ -167,7 +167,15 @@ const AppStack = createBottomTabNavigator(
         tabBarLabel: "SETTINGS",
         tabBarIcon: ({ tintColor }) => (
           <Icon name="ios-contact" color={tintColor} size={24} />
-        )
+        ),
+        tabBarOnPress: async () => {
+          currentFirstName = await AsyncStorage.getItem("FirstName")
+          currentLastName = await AsyncStorage.getItem("LastName")
+          currentUsername = await AsyncStorage.getItem("Username")
+          console.log(currentFirstName)
+          navigation.setParams({firstName: currentFirstName, lastName: currentLastName, userName: currentUsername});
+          navigation.navigate("Settings")
+        }
       })
     }
 })
