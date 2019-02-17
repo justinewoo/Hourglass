@@ -89,11 +89,13 @@ import {
   createBottomTabNavigator,
   createAppContainer
 } from "react-navigation";
-//import Icon from "react-native-vector-icons/Ionicons";
+import Icon from "react-native-vector-icons/Ionicons";
 import { AsyncStorage } from "react-native";
-
 import SignUpScreen from "./app/Screens/SignUpScreen"
 import SignInScreen from "./app/Screens/SignInScreen"
+import ChatbookScreen from "./app/Screens/ChatbookScreen"
+import axios from "axios"
+//import ChatroomScreen from "./app/Screens/ChatroomScreen"
 
 const LoginStack = createStackNavigator(
   {
@@ -109,14 +111,56 @@ const LoginStack = createStackNavigator(
     headerMode: "null"
   }
 );
+
+const UserStack = createStackNavigator(
+  {
+    ChatbookScreen: {
+      screen: ChatbookScreen
+    },
+    // ChatroomScreen: {
+    //   screen: ChatroomScreen
+    // }
+  }
+)
 const AuthStack = createStackNavigator(
   { SignIn: LoginStack },
   { headerMode: "null" }
 );
 
-const createRootNavigator = (signedIn = false) => {
+const AppStack = createBottomTabNavigator(
+  {
+    Chatroom: {
+      screen: UserStack,
+      navigationOptions: ({ navigation }) => ({
+        tabBarLabel: "CHAT",
+        tabBarIcon: ({ tintColor }) => (
+          <Icon name="ios-contact" color={tintColor} size={24} />
+        ),
+        tabBarOnPress: () => {
+          var self = this
+          const getUsersData = {
+              todo: 'getAllUsers',
+              type: 'user'
+          }
+          const querystring = require('querystring');
+          axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(getUsersData))
+              .then(function(allUsersValues) {
+                // navigation.setParams ({allUsers: allUsersValues['data']});
+                // navigation.navigate ("ChatbookScreen");
+                navigation.navigate("ChatbookScreen", {allUsers: allUsersValues['data']})
+
+              })
+        }
+      })
+    }
+})
+
+export const createRootNavigator = () => {
   return createSwitchNavigator(
     {
+      SignedIn: {
+        screen: AppStack
+      },
       SignedOut: {
         screen: AuthStack
       }
@@ -126,7 +170,32 @@ const createRootNavigator = (signedIn = false) => {
     }
   );
 };
-export default createAppContainer(AuthStack);
+// const createRootNavigator = (signedIn = false) => {
+//   return createSwitchNavigator(
+//     {
+//       SignedOut: {
+//         screen: AuthStack
+//       },
+//     },
+//     {
+//       initialRouteName: "SignedOut"
+//     }
+//   );
+// };
+
+export default createAppContainer(createSwitchNavigator(
+  {
+    SignedIn: {
+      screen: AppStack
+    },
+    SignedOut: {
+      screen: AuthStack
+    }
+  },
+  {
+    initialRouteName: "SignedOut"
+  }
+));
 
 //export default AppContainer
 // export const createRootNavigator = (signedIn = false) => {

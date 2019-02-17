@@ -12,10 +12,7 @@ class SignUpScreen extends Component {
 
   }
   _postUser = () => {
-    console.log(this.state.firstName)
     var self = this;
-    console.log(self.state.firstName)
-    console.log(self.state.lastName)
     const getUsersData = {
       todo: "register",
       type: "user",
@@ -24,9 +21,11 @@ class SignUpScreen extends Component {
       password: self.state.password,
       username: self.state.username
     }
-    console.log(getUsersData)
     const querystring = require('querystring');
     axios.post ("http://169.234.64.64:8000/hourglass_db/", querystring.stringify(getUsersData))
+        .then(function (response) {
+            alert('Successfully created account')
+        })
   }
   _goToLogin = () => {
     this.props.navigation.navigate("SignInScreen")
