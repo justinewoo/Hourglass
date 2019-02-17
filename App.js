@@ -96,6 +96,7 @@ import SignInScreen from "./app/Screens/SignInScreen"
 import ChatbookScreen from "./app/Screens/ChatbookScreen"
 import axios from "axios"
 import ChatroomScreen from "./app/Screens/ChatroomScreen"
+import Settings from "./app/Screens/Settings"
 
 const LoginStack = createStackNavigator(
   {
@@ -122,6 +123,15 @@ const UserStack = createStackNavigator(
     }
   }
 )
+
+const SettingsStack = createStackNavigator(
+  {
+    SettingsScreen: {
+      screen: Settings
+    }
+  }
+)
+
 const AuthStack = createStackNavigator(
   { SignIn: LoginStack },
   { headerMode: "null" }
@@ -149,6 +159,15 @@ const AppStack = createBottomTabNavigator(
 
               })
         }
+      })
+    },
+    Settings: {
+      screen: SettingsStack,
+      navigationOptions: ({ navigation }) => ({
+        tabBarLabel: "SETTINGS",
+        tabBarIcon: ({ tintColor }) => (
+          <Icon name="ios-contact" color={tintColor} size={24} />
+        )
       })
     }
 })

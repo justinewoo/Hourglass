@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Alert, AppRegistry, Button, StyleSheet, View, Text, TextInput, Image, Font, ScrollView, AsyncStorage } from 'react-native';
 import axios from "axios"
 
+
 class ChatroomScreen extends Component {
   constructor(props) {
     super(props);
@@ -12,9 +13,46 @@ class ChatroomScreen extends Component {
       historyMessages: [],
       attributeArray: [],
       sender: '',
-      receiver: ''
+      receiver: '',
+      senderValues: [],
+      receiverValues: [],
+      count: 0
     };
 
+
+  }
+  componentDidUpdate() {
+    if (this.state.count != 0) {
+      console.log('sup')
+      setInterval(() => this.loadData(), 1000);
+    }
+  }
+  async loadData() {
+    var self = this
+    var currentUser = await AsyncStorage.getItem("Username")
+    var receiverUser = await AsyncStorage.getItem("Receiver")
+    const getSenderToReceiver = {
+      type: 'user',
+      todo: 'getMessage',
+      sender: currentUser,
+      receiver: receiverUser
+    }
+    const getReceiverToSender = {
+      type: 'user',
+      todo: 'getMessage',
+      sender: receiverUser,
+      receiver: currentUser
+    }
+    const querystring = require('querystring');
+    axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(getSenderToReceiver))
+        .then(function(receiverRep){
+          axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(getReceiverToSender))
+            .then(function(senderRep){
+              self.setState( { senderValues: senderRep })
+              self.setState({receiverValues: receiverRep})
+
+            })
+        })
   }
   _postMessage = () => {
     var self = this
@@ -34,6 +72,8 @@ class ChatroomScreen extends Component {
       day: dd,
       time: t
     }
+    const currentListOfMessage = this.state.historyMessages
+    currentListOfMessage.push(postMessageData)
     const querystring = require('querystring')
     axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(postMessageData))
   }
@@ -46,8 +86,10 @@ class ChatroomScreen extends Component {
     const lastName = navigation.getParam("lname")
     const currentUser = navigation.getParam("unameValue")
     const receiver = navigation.getParam("receiver")
+    this.state.senderValues = currentReceiverValues
+    this.state.receiverValues = currentSenderValues
     console.log(currentUser)
-    currentHistory = currentReceiverValues.concat(currentSenderValues)
+    currentHistory = this.state.receiverValues.concat(this.state.senderValues)
     const receiverAttribute =  {
       	position: 'relative',
         right: -35,
@@ -107,6 +149,7 @@ class ChatroomScreen extends Component {
     this.state.attributeArray = currentAttributes
     this.state.sender = currentUser
     this.state.receiver = receiver
+    this.state.count = 1
     return(
         <View style = {styles.con}>
 
@@ -208,8 +251,3 @@ const styles = StyleSheet.create({
   	paddingLeft: 10,
   },
 });
-
-
-
-
-    //AppRegistry.registerComponent('Hourglass', () => chatLog);
