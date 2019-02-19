@@ -3,6 +3,13 @@ import { Alert, AppRegistry, Button, StyleSheet, View, Text, TextInput, Image, F
 import axios from "axios"
 
 class ChatroomScreen extends Component {
+  static navigationOptions = ({ navigation }) => {
+    firstName = navigation.getParam("fname")
+    lastName = navigation.getParam("lname")
+    return {
+      title: firstName + " " + lastName
+    }
+  };
   constructor(props) {
     super(props);
     this.state = {
@@ -21,40 +28,40 @@ class ChatroomScreen extends Component {
 
 
   }
-  componentDidMount() {
-    // if (this.state.count != 0) {
-    //   console.log('sup')
-    //   setInterval(() => this.loadData(), 1000);
-    // }
-    this.loadData()
-  }
-  async loadData() {
-    var self = this
-    var currentUser = await AsyncStorage.getItem("Username")
-    var receiverUser = await AsyncStorage.getItem("Receiver")
-    const getSenderToReceiver = {
-      type: 'user',
-      todo: 'getMessage',
-      sender: currentUser,
-      receiver: receiverUser
-    }
-    const getReceiverToSender = {
-      type: 'user',
-      todo: 'getMessage',
-      sender: receiverUser,
-      receiver: currentUser
-    }
-    const querystring = require('querystring');
-    axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(getSenderToReceiver))
-        .then(rep => {
-          axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(getReceiverToSender))
-            .then(res => {
-              const sender = rep.data
-              const receiver = res.data
-              this.setState({ sender, receiver })
-            })
-        })
-  }
+  // componentDidMount() {
+  //   // if (this.state.count != 0) {
+  //   //   console.log('sup')
+  //   //   setInterval(() => this.loadData(), 1000);
+  //   // }
+  //   this.loadData()
+  // }
+  // async loadData() {
+  //   var self = this
+  //   var currentUser = await AsyncStorage.getItem("Username")
+  //   var receiverUser = await AsyncStorage.getItem("Receiver")
+  //   const getSenderToReceiver = {
+  //     type: 'user',
+  //     todo: 'getMessage',
+  //     sender: currentUser,
+  //     receiver: receiverUser
+  //   }
+  //   const getReceiverToSender = {
+  //     type: 'user',
+  //     todo: 'getMessage',
+  //     sender: receiverUser,
+  //     receiver: currentUser
+  //   }
+  //   const querystring = require('querystring');
+  //   axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(getSenderToReceiver))
+  //       .then(rep => {
+  //         axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(getReceiverToSender))
+  //           .then(res => {
+  //             const sender = rep.data
+  //             const receiver = res.data
+  //             this.setState({ sender, receiver })
+  //           })
+  //       })
+  // }
   _postMessage = () => {
     var self = this
     var today = new Date();
@@ -76,7 +83,7 @@ class ChatroomScreen extends Component {
     const currentListOfMessage = this.state.historyMessages
     currentListOfMessage.push(postMessageData)
     const querystring = require('querystring')
-    axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(postMessageData))
+    axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(postMessageData))
   }
   render(){
     const shadowStyle = { shadowOpacity: 0.5, shadowColor: 'gray', shadowRadius: 50,}
@@ -179,10 +186,6 @@ class ChatroomScreen extends Component {
         <View style = {styles.cotainer}>
 
           <View style={{flex: 1}}>
-
-            <Text style = {[styles.viewStyle, shadowStyle]}>
-            	{this.state.fname} {this.state.lname}
-            </Text>
             	<View style = {styles.MessagePage}>
               	<ScrollView
     				ref={ref => this.scrollView = ref}
@@ -253,7 +256,7 @@ const styles = StyleSheet.create({
     },
   MessagePage: {
   	padding: 10,
-  	height: 450,
+  	height: 490,
   },
   viewStyle: {
   	height: 50,

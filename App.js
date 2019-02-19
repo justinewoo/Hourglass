@@ -153,7 +153,7 @@ const AppStack = createBottomTabNavigator(
               type: 'user'
           }
           const querystring = require('querystring');
-          axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(getUsersData))
+          axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(getUsersData))
               .then(function(allUsersValues) {
                 navigation.navigate("ChatbookScreen", {allUsers: allUsersValues['data']})
 

@@ -26,14 +26,14 @@ class SignInScreen extends Component {
           type: 'user'
       }
       const querystring = require('querystring');
-      axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(loginData))
+      axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(loginData))
           .then(function(response) {
               passwordValue = response['data']['password']
               usernameValue = response['data']['username']
               firstNameValue = response['data']['firstName']
               lastNameValue = response['data']['lastName']
               if (passwordValue == self.state.password) {
-                  axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(getUsersData))
+                  axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(getUsersData))
                       .then(function(allUsersValues) {
                           AsyncStorage.setItem("Username", usernameValue)
                           AsyncStorage.setItem("FirstName", firstNameValue)

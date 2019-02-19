@@ -4,6 +4,9 @@ import { Card, CardItem, Container, Content, Item, Header, List, ListItem, Left,
 import axios from "axios"
 
 class ChatbookScreen extends Component {
+  static navigationOptions = {
+    headerTitle: "Contacts"
+  };
 	constructor(props) {
 		super(props)
 		this.state = {chosenDate: new Date(), text: '', message: '',allUsers: '', allMessages: []};
@@ -27,9 +30,9 @@ class ChatbookScreen extends Component {
     }
     const querystring = require('querystring');
     const currentHistory = []
-    axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(getSenderToReceiver))
+    axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(getSenderToReceiver))
         .then(function(receiverRep){
-          axios.post('http://169.234.64.64:8000/hourglass_db/', querystring.stringify(getReceiverToSender))
+          axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(getReceiverToSender))
             .then(function(senderRep){
               AsyncStorage.setItem("Receiver", userValue['value']['username'])
               self.props.navigation.navigate("ChatroomScreen", {receiver: userValue['value']['username'], fname: userValue['value']['firstName'], lname: userValue['value']['lastName'], unameValue: uname, currentReceiverMessages: receiverRep['data'], currentSenderMessages: senderRep['data']})
@@ -59,9 +62,6 @@ class ChatbookScreen extends Component {
     this.state.allUsers = currentUserValues
     return (
       <Container>
-      	<Header>
-      		<Text> Contacts </Text>
-      	</Header>
         <ScrollView>
           {this.state.allUsers.map ((value, index) => (
               <View key = {index}>
