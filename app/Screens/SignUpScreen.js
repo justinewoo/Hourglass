@@ -13,6 +13,11 @@ class SignUpScreen extends Component {
   }
   _postUser = () => {
     var self = this;
+    const createMessageArr = {
+      todo:"postScheduledMessage",
+      type:"user",
+      username: self.state.username
+    }
     const getUsersData = {
       todo: "register",
       type: "user",
@@ -21,10 +26,13 @@ class SignUpScreen extends Component {
       password: self.state.password,
       username: self.state.username
     }
+
     const querystring = require('querystring');
     axios.post ("http://localhost:8000/hourglass_db/", querystring.stringify(getUsersData))
         .then(function (response) {
-            alert('Successfully created account')
+          alert('Successfully created account')
+            axios.post("http://localhost:8000/hourglass_db/",querystring.stringify(createMessageArr))
+
         })
   }
   _goToLogin = () => {

@@ -9,7 +9,7 @@ class ChatbookScreen extends Component {
   };
 	constructor(props) {
 		super(props)
-		this.state = {chosenDate: new Date(), text: '', message: '',allUsers: '', allMessages: []};
+		this.state = {chosenDate: new Date(), text: '', message: '',allUsers: '', allMessages: [], currentReceiver: '', receiverFirstName: '', receiverLastName: '', modalVisible: false};
 		this.setDate = this.setDate.bind(this);
 
 	}
@@ -48,13 +48,53 @@ class ChatbookScreen extends Component {
 		modalVisible: false,
 	};
 
-	openModal() {
-		this.setState({modalVisible:true});
+	openModal(userValue) {
+		this.setState({modalVisible:true, currentReceiver: userValue['value']['username'], receiverFirstName: userValue['value']['firstName'], receiverLastName: userValue['value']['lastName']});
 	}
 
 	closeModal() {
 		this.setState({modalVisible:false});
 	}
+  _postScheduleMessage = async() => {
+    var self = this
+    var dd = self.state.chosenDate.getDate();
+    var mm = self.state.chosenDate.getMonth()+1;
+    var yyyy = self.state.chosenDate.getFullYear();
+    var t = self.state.chosenDate.getTime();
+    var user = await AsyncStorage.getItem("Username")
+    const postMessageData = {
+      type: 'user',
+      todo: 'postMessage',
+      sender: user,
+      receiver: self.state.currentReceiver,
+      message: self.state.message,
+      year: yyyy,
+      month: mm,
+      day: dd,
+      time: t
+    }
+    const updateMessageData = {
+      sender: user,
+      receiver: self.state.currentReceiver,
+      message: self.state.message,
+      year: yyyy,
+      month: mm,
+      day: dd,
+      time: t
+    }
+    const updateScheduledMessageData = {
+      type: 'user',
+      todo: 'updateMessage',
+      username: user,
+      newMessage: JSON.stringify(updateMessageData)
+    }
+    const querystring = require('querystring')
+    axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(postMessageData))
+      .then(function(docs) {
+        axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(updateScheduledMessageData))
+
+      })
+  }
 
 	render() {
     const {navigation} = this.props;
@@ -74,6 +114,7 @@ class ChatbookScreen extends Component {
           			<View
           				style = {{paddingTop: 30, paddingLeft: 10, paddingBottom: 40}}
           			>
+                  <Text> {this.state.currentReceiver}</Text>
           				<Button small border
           					onPress = {() => this.closeModal()}
           				>
@@ -88,7 +129,7 @@ class ChatbookScreen extends Component {
           					<Item rounded>
           						<Input
           							placeholder = 'Message'
-          							onChangeText = {(message) => this.setState({message})}
+                        onChangeText={(message) => this.setState({message})} value = {this.state.message}
           						/>
           					</Item>
           				</View>
@@ -101,6 +142,7 @@ class ChatbookScreen extends Component {
           				</View>
           				<View style = {{paddingBottom: 100}}>
           					<DatePickerIOS
+                      minimumDate = {new Date()}
           						date = {this.state.chosenDate}
           						onDateChange = {this.setDate}
           					/>
@@ -108,7 +150,7 @@ class ChatbookScreen extends Component {
           				<View style = {{paddingLeft: 10, paddingRight: 10}}>
           					<Button block info
           					style = {{padding: 20}}
-          					onPress={() => {Alert.alert('Message Sent');}}
+          					onPress={() => {this._postScheduleMessage()}}
           					>
           						<Text> Send </Text>
           					</Button>
@@ -116,16 +158,16 @@ class ChatbookScreen extends Component {
           			</View>
           		</Modal>
           		<List>
-            			<ListItem Avatar>
+            			<ListItem Avatar button onPress={() => this._goToChatroom({value})}>
 
             				<View style = {{flex: 1, flexDirection: 'row', justifyContent: 'space-between'}}>
-                    <TouchableOpacity onPress={() => this._goToChatroom({value})}>
+
 
                         <Text> {value['firstName']} {value['lastName']}</Text>
-                        </TouchableOpacity>
+
 
                 					<Button full rounded info
-                						onPress = {() => this.openModal()}
+                						onPress = {() => this.openModal({value})}
                 					>
                 						<Text> Schedule </Text>
                 					</Button>
