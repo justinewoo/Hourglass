@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Alert, AppRegistry, Button, StyleSheet, View, Text, TextInput, Image, Font, AsyncStorage } from 'react-native';
+import { Alert, AppRegistry, StyleSheet, View, Text, TextInput, Image, Font, AsyncStorage, TouchableOpacity } from 'react-native';
+import {Button} from 'native-base'
 import axios from "axios"
 
 class SignInScreen extends Component {
@@ -51,9 +52,6 @@ class SignInScreen extends Component {
     self.props.navigation.navigate("SignUpScreen")
   }
   render(){
-    let pic = {
-      uri: 'http://cliparts101.com/files/189/7560C01DA965819F6055A1E5B041F83D/Architetto__Clessidra.png'
-      };
     return(
 
       <View style = {styles.container}>
@@ -62,33 +60,44 @@ class SignInScreen extends Component {
           {this.state.titleText}{'\n'}
         </Text>
 
-      <Image source={pic} style={{width: 193, height: 200}}/>
 
-        <TextInput
-		  style = {{fontSize: 30, margin: 15, marginTop: 50 }}
+      <View styles = {{flex: 1, flexDirection: 'row'}}>
+      <TextInput
+		  style = {{fontSize: 20, margin: 0, marginTop: 50, flexDirection: 'row' }}
           placeholder="Enter your username"
-          onChangeText={(username) => this.setState({username})} value = {this.state.username}
-        />
+          placeholderTextColor = 'white'
+          autoCorrect = {false}
+          onChangeText={(username) => this.setState({username})} value = {this.state.username}        />
+      	<View style = {{backgroundColor: 'white', height: 2, width: 325, justifyContent: 'space-between', borderRadius:10}}>
 
-        <TextInput
-		  style = {{fontSize: 30, margin: 15}}
+	</View>
+    </View>
+
+    <View styles = {{flex: 1, flexDirection: 'row'}}>
+      <TextInput
+		  style = {{fontSize: 20, margin: 0, marginTop: 50,flexDirection: 'row' }}
+		  secureTextEntry = {true}
+		  autoCorrect = {false}
           placeholder="Enter your password"
-          onChangeText={(password) => this.setState({password})} value = {this.state.password}
-        />
+          placeholderTextColor = 'white'
+          onChangeText={(password) => this.setState({password})} value = {this.state.password}        />
+      	<View style = {{backgroundColor: 'white', height: 2, width: 325, justifyContent: 'space-between', borderRadius:10, marginBottom: 50}}>
 
-        <Button
+	</View>
+    </View>
+        <Button block info
+      		style = {{padding: 20, marginLeft:40, marginRight:40, backgroundColor: 'white'}}
           onPress={() => {
               this._signIn()
-          }}
-          title="Log In"
-        />
-
-        <Button
-          onPress={() => {
-              this._goBackToCreate()
-          }}
-          title="Create an Account"
-        />
+          }}      	>
+      		<Text> Log In </Text>
+      	</Button>
+        <TouchableOpacity
+        onPress={() => {
+            this._goBackToCreate()
+        }}      	>
+      		<Text style = {{justifyContent: 'space-between', marginTop: 5, color: 'white'}}>Do not Have an Account? Create One </Text>
+      	</TouchableOpacity>
 
       </View>
       );
@@ -96,16 +105,16 @@ class SignInScreen extends Component {
       }
 export default SignInScreen;
 
-
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    height: 800,
     paddingTop: 100,
     alignItems: 'center',
+    backgroundColor: 'skyblue',
     },
   titleText: {
     fontSize: 40,
-    fontWeight: 'bold',
+    fontFamily: 'Helvetica-Light',
     },
     });
 

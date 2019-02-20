@@ -97,6 +97,7 @@ import ChatbookScreen from "./app/Screens/ChatbookScreen"
 import axios from "axios"
 import ChatroomScreen from "./app/Screens/ChatroomScreen"
 import Settings from "./app/Screens/Settings"
+import ListOfSchedules from "./app/Screens/ListOfSchedules"
 
 const LoginStack = createStackNavigator(
   {
@@ -108,7 +109,7 @@ const LoginStack = createStackNavigator(
     }
   },
   {
-    initialRouteName: "SignUpScreen",
+    initialRouteName: "SignInScreen",
     headerMode: "null"
   }
 );
@@ -120,6 +121,14 @@ const UserStack = createStackNavigator(
     },
     ChatroomScreen: {
       screen: ChatroomScreen
+    }
+  }
+)
+
+const ScheduledStack = createStackNavigator(
+  {
+    ListOfSchedules: {
+      screen: ListOfSchedules
     }
   }
 )
@@ -161,6 +170,28 @@ const AppStack = createBottomTabNavigator(
         }
       })
     },
+    Schedules: {
+      screen: ScheduledStack,
+      navigationOptions: ({ navigation }) => ({
+        tabBarLabel: "SCHEDULES",
+        tabBarIcon: ({ tintColor }) => (
+          <Icon name="ios-contact" color={tintColor} size={24} />
+        ),
+        tabBarOnPress: () => {
+          var self = this
+          const getUsersData = {
+              todo: 'getAllUsers',
+              type: 'user'
+          }
+          const querystring = require('querystring');
+          axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(getUsersData))
+              .then(function(allUsersValues) {
+                navigation.navigate("ListOfSchedules", {allUsers: allUsersValues['data']})
+
+              })
+        }
+      })
+    },
     Settings: {
       screen: SettingsStack,
       navigationOptions: ({ navigation }) => ({
@@ -172,7 +203,6 @@ const AppStack = createBottomTabNavigator(
           currentFirstName = await AsyncStorage.getItem("FirstName")
           currentLastName = await AsyncStorage.getItem("LastName")
           currentUsername = await AsyncStorage.getItem("Username")
-          console.log(currentFirstName)
           navigation.setParams({firstName: currentFirstName, lastName: currentLastName, userName: currentUsername});
           navigation.navigate("Settings")
         }
