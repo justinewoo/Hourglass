@@ -34,8 +34,20 @@ class ChatbookScreen extends Component {
         .then(function(receiverRep){
           axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(getReceiverToSender))
             .then(function(senderRep){
+              var finalSenderMessages = []
+              var finalReceiverMessages = []
+              for (var i = 0; i < senderRep['data'].length; i++) {
+                if (Number(senderRep['data'][i]['time']) <= Number(Date.now())) {
+                  finalSenderMessages.push(senderRep['data'][i])
+                }
+              }
+              for (var i = 0; i < receiverRep['data'].length; i++) {
+                if (Number(receiverRep['data'][i]['time']) <= Number(Date.now())) {
+                  finalReceiverMessages.push(receiverRep['data'][i])
+                }
+              }
               AsyncStorage.setItem("Receiver", userValue['value']['username'])
-              self.props.navigation.navigate("ChatroomScreen", {receiver: userValue['value']['username'], fname: userValue['value']['firstName'], lname: userValue['value']['lastName'], unameValue: uname, currentReceiverMessages: receiverRep['data'], currentSenderMessages: senderRep['data']})
+              self.props.navigation.navigate("ChatroomScreen", {receiver: userValue['value']['username'], fname: userValue['value']['firstName'], lname: userValue['value']['lastName'], unameValue: uname, currentReceiverMessages: finalReceiverMessages, currentSenderMessages: finalSenderMessages})
             })
         })
   }

@@ -28,7 +28,49 @@ class ChatroomScreen extends Component {
 
 
   }
-  // componentDidMount() {
+  async componentDidMount() {
+    var self = this
+    const uname = await AsyncStorage.getItem("Username")
+    const getSenderToReceiver = {
+      type: 'user',
+      todo: 'getMessage',
+      sender: uname,
+      receiver: userValue['value']['username']
+    }
+    const getReceiverToSender = {
+      type: 'user',
+      todo: 'getMessage',
+      sender: userValue['value']['username'],
+      receiver: uname
+    }
+    const querystring = require('querystring');
+    const currentHistory = []
+    this.loadData()
+    }
+  async loadData() {
+    axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(getSenderToReceiver))
+        .then(function(receiverRep){
+          axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(getReceiverToSender))
+            .then(function(senderRep){
+              var finalSenderMessages = []
+              var finalReceiverMessages = []
+              for (var i = 0; i < senderRep['data'].length; i++) {
+                if (Number(senderRep['data'][i]['time']) <= Number(Date.now())) {
+                  finalSenderMessages.push(senderRep['data'][i])
+                }
+              }
+              for (var i = 0; i < receiverRep['data'].length; i++) {
+                if (Number(receiverRep['data'][i]['time']) <= Number(Date.now())) {
+                  finalReceiverMessages.push(receiverRep['data'][i])
+                }
+              }
+              //prevState => ({ count: prevState.count + 1 }),
+              console.log(senderValues)
+              console.log(receiverValues)
+              self.setState({ senderValues: finalSenderMessages, receiver: finalReceiverMessages })
+            })
+        })
+  }
   //   // if (this.state.count != 0) {
   //   //   console.log('sup')
   //   //   setInterval(() => this.loadData(), 1000);
