@@ -25,7 +25,7 @@ class ChatroomScreen extends Component {
       count: 0,
       dynamicAttributesArray: []
     };
-
+    this._addToScreen = this._addToScreen.bind(this)
 
   }
   // async componentDidMount() {
@@ -104,6 +104,13 @@ class ChatroomScreen extends Component {
   //           })
   //       })
   // }
+  componentWillUpdate() {
+    console.log(this.state.historyMessages)
+  }
+  _addToScreen = (newMessage) => {
+    this.setState({senderValues:newMessage, message:''})
+
+  }
   _postMessage = () => {
     var self = this
     var today = new Date();
@@ -122,9 +129,11 @@ class ChatroomScreen extends Component {
       day: dd,
       time: t
     }
-    const currentListOfMessage = this.state.historyMessages
+    const currentListOfMessage = this.state.senderValues
     currentListOfMessage.push(postMessageData)
     const querystring = require('querystring')
+    //console.log(currentListOfMessage)
+    this._addToScreen(currentListOfMessage)
     axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(postMessageData))
   }
   render(){

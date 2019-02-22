@@ -89,10 +89,10 @@ class ChatbookScreen extends Component {
       sender: user,
       receiver: self.state.currentReceiver,
       message: self.state.message,
-      year: yyyy,
-      month: mm,
-      day: dd,
-      time: t
+      year: String(yyyy),
+      month: String(mm),
+      day: String(dd),
+      time: String(t)
     }
     const updateScheduledMessageData = {
       type: 'user',

@@ -177,17 +177,19 @@ const AppStack = createBottomTabNavigator(
         tabBarIcon: ({ tintColor }) => (
           <Icon name="ios-contact" color={tintColor} size={24} />
         ),
-        tabBarOnPress: () => {
+        tabBarOnPress: async () => {
           var self = this
-          const getUsersData = {
-              todo: 'getAllUsers',
-              type: 'user'
+          currentUsername = await AsyncStorage.getItem("Username")
+          const getScheduledMessagesData = {
+              todo: 'getAllScheduledMessages',
+              type: 'user',
+              username: currentUsername
           }
           const querystring = require('querystring');
-          axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(getUsersData))
-              .then(function(allUsersValues) {
-                navigation.navigate("ListOfSchedules", {allUsers: allUsersValues['data']})
-
+          axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(getScheduledMessagesData))
+              .then(function(allSchedulesValues) {
+                //console.log(allSchedulesValues['data'])
+                navigation.navigate("ListOfSchedules", {allScheduled: allSchedulesValues['data']['listOfMessages']})
               })
         }
       })
@@ -268,3 +270,31 @@ export default createAppContainer(createSwitchNavigator(
 //     }
 //   );
 // };
+
+
+
+
+// var self = this
+// const parseScheduledMessage = JSON.parse(scheduledMessage['value'])
+// const indexOfValue = this.state.scheduledMessages.indexOf(scheduledMessage['value'])
+// const newList = this.state.scheduledMessages.splice(indexOfValue, 1)
+// const userName = await AsyncStorage('Username')
+// const deleteMessageData = {
+//   type: 'user',
+//   todo: 'deleteUpdatedMessage',
+//   username: userName,
+//   sender: userName,
+//   receiver: parseScheduledMessage['receiver'],
+//   day: parseScheduledMessage['day'],
+//   month: parseScheduledMessage['month'],
+//   year: parseScheduledMessage['year'],
+//   time: parseScheduledMessage['time'],
+//   message: parseScheduledMessage['message']
+// }
+// console.log(deleteMessageData)
+// this._delete(newList)
+// // axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(deleteMessageData))
+// //   .then(function(result) {
+// //   })
+
+//        					onPress = {() => this.openModal()}

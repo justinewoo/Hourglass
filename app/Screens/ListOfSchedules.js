@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, TouchableOpacity, Modal, DatePickerIOS, TextInput, Alert, ScrollView} from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Modal, DatePickerIOS, TextInput, Alert, ScrollView, AsyncStorage} from 'react-native';
 import { Card, CardItem, Container, Content, Item, Header, List, ListItem, Left, Right, Body, Input, Button, Text} from 'native-base';
+import axios from "axios"
 
 class ListOfSchedules extends Component {
   static navigationOptions = {
@@ -8,9 +9,9 @@ class ListOfSchedules extends Component {
   };
   constructor(props) {
   		super(props)
-		this.state = {chosenDate: new Date(), text: '', message: '', modalVisible: false};
+		this.state = {chosenDate: new Date(), text: '', message: '', modalVisible: false, scheduledMessages: []};
 		this.setDate = this.setDate.bind(this);
-
+    this._delete = this._delete.bind(this);
 	}
 
 	setDate(newDate) {
@@ -29,47 +30,96 @@ class ListOfSchedules extends Component {
 	closeModal() {
 		this.setState({modalVisible:false});
 	}
+  _delete(newList){
+    this.setState({scheduledMessages: newList})
+  }
+  _deleteMessage = async (scheduledMessage) => {
+    var self = this
+    const userName = await AsyncStorage.getItem("Username")
+    const parseScheduledMessage = JSON.parse(scheduledMessage['value'])
+    const indexOfValue = this.state.scheduledMessages.indexOf(scheduledMessage['value'])
+    const newList = this.state.scheduledMessages.splice(indexOfValue, 1)
+    // this._delete(newList)
+    // const userName = await AsyncStorage('Username')
+    // const parseScheduledMessage = JSON.parse(scheduledMessage['value'])
+    // const indexOfValue = this.state.scheduledMessages.indexOf(scheduledMessage['value'])
+    // const newList = this.state.scheduledMessages.splice(indexOfValue, 1)
+    console.log(userName)
+    const deleteMessageData = {
+      type: 'user',
+      todo: 'deleteUpdatedMessage',
+      username: userName,
+      sender: userName,
+      receiver: parseScheduledMessage['receiver'],
+      day: parseScheduledMessage['day'],
+      month: parseScheduledMessage['month'],
+      year: parseScheduledMessage['year'],
+      time: parseScheduledMessage['time'],
+      message: parseScheduledMessage['message']
+    }
+    // const deleteMessageData = {
+    //   type: "user",
+    //   todo: "deleteUpdatedMessage",
+    //   username: "K",
+    //   sender: "K",
+    //   receiver: "K",
+    //   day: "21",
+    //   month: "2",
+    //   year: "2019",
+    //   time: "1550795629000",
+    //   message: "Sup"
+    // }
+    console.log(indexOfValue)
+    const querystring = require('querystring');
+    // this._delete(newList)
+    console.log(querystring.stringify(deleteMessageData))
+    axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(deleteMessageData))
+      .then(function(response) {
+        self._delete(newList)
+      })
+  }
 
   render(){
+    const {navigation} = this.props;
+    const currentScheduledMessages = navigation.getParam("allScheduled")
+    this.state.scheduledMessages = currentScheduledMessages
     return(
 
       <View styles = {styles.cotainer}>
         <View style={{ alignItems: 'center', marginTop: 50, height: 600}}>
 
         	<ScrollView>
+              {this.state.scheduledMessages.map ((value, index) => (
+            		<View style={styles.scheduleBubble}>
+          			<View style = {styles.dynamic}>
 
-          		<View style={styles.scheduleBubble}>
-        			<View style = {styles.dynamic}>
+                    	<Button full rounded info
+  						style = {styles.redExit}
+        					onPress={() => {this._deleteMessage({value})}}
+        					>
 
-                  	<Button full rounded info
-						style = {styles.redExit}
-      					onPress = {() => Alert.alert('Delete')}
-      					>
+        					</Button>
 
-      					</Button>
+          			<Text style = {styles.title}>Contact Name: {JSON.parse(value)['receiver']}</Text>
 
-        			<Text style = {styles.title}>Contact Name</Text>
+          			<Text style = {styles.title}>Message: {JSON.parse(value)['message']}</Text>
 
-        			<Text style = {styles.title}>asdjfladsjflkasdjfl;sadjflsdjflksadjflasdjfljadslkfjasdljfladsjfldsjlfjdslafjlkdasjf;klasdflkjsdalkfj;alksdjfl;sadjf;lksadjf;klsdajf;klsafkl;sadfkl;jasd;lkfjal;fjsd;klfjsl;kfj;lsdfjlasfj;alsjfl;adsjf;ldsj</Text>
-
-					<Text style = {styles.title}>Dat;akosdjflasdjfkl;sdjflksdlkfjds;lajfl;kajsdlfjasdljfklsadjf;lsdjal;jfalkdsjfldjsalfjlsajf;ldasjl;kfjadsl;kfjsa;lkdjfldksjflksdajflkjdsakl;fjdsa;lfl;akse</Text>
-
-					<Text style = {styles.container}>a;sdifjl;sadjfl;adsjfl;asdjljasdfljasl;kfjasdl;jf;lasdlfj</Text>
-
-					<Button block info
-						style = {styles.update}
-      					onPress = {() => this.openModal()}
-      					>
-      						<Text style = {{color: 'black', fontFamily: 'Helvetica-Light'}}> Update </Text>
-      					</Button>
+  					<Text style = {styles.title}>Scheduled Date: {JSON.parse(value)['month']}/{JSON.parse(value)['day']}/{JSON.parse(value)['year']}</Text>
+            <Text style = {styles.container}>a;sdifjl;sadjfl;adsjfl;asdjljasdfljasl;kfjasdl;jf;lasdlfj</Text>
+  					<Button block info
+  						style = {styles.update}
+              onPress = {() => this.openModal()}
+            >
+        						<Text style = {{color: 'black', fontFamily: 'Helvetica-Light'}}> Update </Text>
+        					</Button>
 
 
-      				</View>
+        				</View>
 
 
 
-        		</View>
-
+          		</View>
+            ))}
         	</ScrollView>
         	<Modal
       			visible = {this.state.modalVisible}
