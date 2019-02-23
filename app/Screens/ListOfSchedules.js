@@ -9,11 +9,15 @@ class ListOfSchedules extends Component {
   };
   constructor(props) {
   		super(props)
-		this.state = {chosenDate: new Date(), text: '', message: '', modalVisible: false, scheduledMessages: []};
+		this.state = {chosenDate: new Date(), text: '', message: '', modalVisible: false, scheduledMessages: [], currentScheduledMessage: {}};
 		this.setDate = this.setDate.bind(this);
     this._delete = this._delete.bind(this);
+    this._goToModal = this._goToModal.bind(this);
+    this._updateMessage = this._updateMessage.bind(this);
 	}
-
+  // componentWillUpdate() {
+  //   console.log(this.state.scheduledMessages)
+  // }
 	setDate(newDate) {
 		this.setState({chosenDate: newDate});
 	}
@@ -33,18 +37,15 @@ class ListOfSchedules extends Component {
   _delete(newList){
     this.setState({scheduledMessages: newList})
   }
+  _updateMessage(newList){
+    this.setState({modalVisible: false, scheduledMessages: newList})
+  }
   _deleteMessage = async (scheduledMessage) => {
     var self = this
     const userName = await AsyncStorage.getItem("Username")
     const parseScheduledMessage = JSON.parse(scheduledMessage['value'])
     const indexOfValue = this.state.scheduledMessages.indexOf(scheduledMessage['value'])
     const newList = this.state.scheduledMessages.splice(indexOfValue, 1)
-    // this._delete(newList)
-    // const userName = await AsyncStorage('Username')
-    // const parseScheduledMessage = JSON.parse(scheduledMessage['value'])
-    // const indexOfValue = this.state.scheduledMessages.indexOf(scheduledMessage['value'])
-    // const newList = this.state.scheduledMessages.splice(indexOfValue, 1)
-    console.log(userName)
     const deleteMessageData = {
       type: 'user',
       todo: 'deleteUpdatedMessage',
@@ -57,27 +58,80 @@ class ListOfSchedules extends Component {
       time: parseScheduledMessage['time'],
       message: parseScheduledMessage['message']
     }
-    // const deleteMessageData = {
-    //   type: "user",
-    //   todo: "deleteUpdatedMessage",
-    //   username: "K",
-    //   sender: "K",
-    //   receiver: "K",
-    //   day: "21",
-    //   month: "2",
-    //   year: "2019",
-    //   time: "1550795629000",
-    //   message: "Sup"
-    // }
     console.log(indexOfValue)
     const querystring = require('querystring');
-    // this._delete(newList)
     console.log(querystring.stringify(deleteMessageData))
     axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(deleteMessageData))
       .then(function(response) {
         self._delete(newList)
       })
   }
+  _goToModal = (scheduledMessage) => {
+    parseScheduledMessage = JSON.parse(scheduledMessage['value'])
+    console.log(parseScheduledMessage)
+    this.setState({modalVisible:true, currentScheduledMessage: parseScheduledMessage, chosenDate: new Date(Number(parseScheduledMessage['time']))})
+  }
+  _updateOldMessage = async () => {
+    var self = this
+    const userName = await AsyncStorage.getItem("Username")
+    const parseScheduledMessage = this.state.currentScheduledMessage
+    const indexOfValue = this.state.scheduledMessages.indexOf(JSON.stringify(parseScheduledMessage))
+    const newList = this.state.scheduledMessages
+    var dd = self.state.chosenDate.getDate();
+    var mm = self.state.chosenDate.getMonth()+1;
+    var yyyy = self.state.chosenDate.getFullYear();
+    var t = self.state.chosenDate.getTime();
+    const addToNewListData = {
+      sender: userName,
+      receiver: parseScheduledMessage['receiver'],
+      message: self.state.message,
+      year: String(yyyy),
+      month: String(mm),
+      day: String(dd),
+      time: String(t)
+    }
+
+    newList[indexOfValue] = JSON.stringify(addToNewListData)
+    // console.log(newList)
+    const updateMessageData = {
+      type: 'user',
+      todo: 'updateOldMessage',
+      username: userName,
+      sender: userName,
+      receiver: parseScheduledMessage['receiver'],
+      day: parseScheduledMessage['day'],
+      month: parseScheduledMessage['month'],
+      year: parseScheduledMessage['year'],
+      time: parseScheduledMessage['time'],
+      message: parseScheduledMessage['message'],
+      newSender: userName,
+      newReceiver: parseScheduledMessage['receiver'],
+      newDay: dd,
+      newMonth: mm,
+      newYear: yyyy,
+      newTime: t,
+      newMessage: self.state.message
+    }
+    const querystring = require('querystring');
+    var listOfSchedules = newList
+    listOfSchedules.sort(function(d1, d2) {
+      if (Number(JSON.parse(d1)['time']) < Number(JSON.parse(d2)['time'])){
+        return -1
+      }else if (Number(JSON.parse(d1)['time']) > Number(JSON.parse(d2)['time'])) {
+        return 1
+      }
+    })
+    // newList = listOfSchedules.filter(message => Number(JSON.parse(message)['time']) >= Number(Date.now()))
+    // console.log(newList)
+    axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(updateMessageData))
+      .then(function(response) {
+        // self.setState({modalVisible:false, scheduledMessages: newList})
+        self._updateMessage(newList.filter(message => Number(JSON.parse(message)['time']) >= Number(Date.now())))
+      })
+  }
+  // _convertToTime = (milliseconds) => {
+  //   const
+  // }
 
   render(){
     const {navigation} = this.props;
@@ -105,10 +159,10 @@ class ListOfSchedules extends Component {
           			<Text style = {styles.title}>Message: {JSON.parse(value)['message']}</Text>
 
   					<Text style = {styles.title}>Scheduled Date: {JSON.parse(value)['month']}/{JSON.parse(value)['day']}/{JSON.parse(value)['year']}</Text>
-            <Text style = {styles.container}>a;sdifjl;sadjfl;adsjfl;asdjljasdfljasl;kfjasdl;jf;lasdlfj</Text>
+            <Text style = {styles.container}>Time: {new Date(Number(JSON.parse(value)['time'])).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}</Text>
   					<Button block info
   						style = {styles.update}
-              onPress = {() => this.openModal()}
+              onPress={() => {this._goToModal({value})}}
             >
         						<Text style = {{color: 'black', fontFamily: 'Helvetica-Light'}}> Update </Text>
         					</Button>
@@ -143,7 +197,7 @@ class ListOfSchedules extends Component {
       				<View style = {{paddingBottom: 20}}>
       					<Item rounded>
       						<Input
-      							placeholder = 'Message'
+      							defaultValue = {this.state.currentScheduledMessage['message']}
       							onChangeText = {(message) => this.setState({message})}
       						/>
       					</Item>
@@ -157,6 +211,7 @@ class ListOfSchedules extends Component {
       				</View>
       				<View style = {{paddingBottom: 100}}>
       					<DatePickerIOS
+                  minimumDate = {new Date()}
       						date = {this.state.chosenDate}
       						onDateChange = {this.setDate}
       					/>
@@ -164,9 +219,9 @@ class ListOfSchedules extends Component {
       				<View style = {{paddingLeft: 10, paddingRight: 10}}>
       					<Button block info
       					style = {{padding: 20}}
-      					onPress={() => {Alert.alert('Message Sent');}}
+                onPress={() => {this._updateOldMessage()}}
       					>
-      						<Text> Send </Text>
+      						<Text> Update </Text>
       					</Button>
       				</View>
       			</View>

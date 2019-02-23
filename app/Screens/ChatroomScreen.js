@@ -104,9 +104,6 @@ class ChatroomScreen extends Component {
   //           })
   //       })
   // }
-  componentWillUpdate() {
-    console.log(this.state.historyMessages)
-  }
   _addToScreen = (newMessage) => {
     this.setState({senderValues:newMessage, message:''})
 

@@ -189,7 +189,16 @@ const AppStack = createBottomTabNavigator(
           axios.post('http://localhost:8000/hourglass_db/', querystring.stringify(getScheduledMessagesData))
               .then(function(allSchedulesValues) {
                 //console.log(allSchedulesValues['data'])
-                navigation.navigate("ListOfSchedules", {allScheduled: allSchedulesValues['data']['listOfMessages']})
+                var listOfSchedules = allSchedulesValues['data']['listOfMessages']
+
+                listOfSchedules.sort(function(d1, d2) {
+                  if (Number(JSON.parse(d1)['time']) < Number(JSON.parse(d2)['time'])){
+                    return -1
+                  }else if (Number(JSON.parse(d1)['time']) > Number(JSON.parse(d2)['time'])) {
+                    return 1
+                  }
+                })
+                navigation.navigate("ListOfSchedules", {allScheduled: listOfSchedules.filter(message => Number(JSON.parse(message)['time']) >= Number(Date.now()))})
               })
         }
       })
@@ -298,3 +307,7 @@ export default createAppContainer(createSwitchNavigator(
 // //   })
 
 //        					onPress = {() => this.openModal()}
+
+
+
+//{(new Date(JSON.parse(value)['time'])).getHours()}<
