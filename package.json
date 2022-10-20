@@ -9,7 +9,7 @@
   "dependencies": {
     "ajax": "0.0.4",
     "axios": "^0.16.2",
-    "expo": "^32.0.0",
+    "expo": "^46.0.16",
     "ionicons": "^4.5.5",
     "native-base": "^2.8.2",
     "query-string": "^6.2.0",
